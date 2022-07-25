@@ -1,5 +1,4 @@
 FROM rust:1.51.0
 
-WORKDIR /home/workspace/ruby_protocol
+WORKDIR /home/workspace/faceless
 COPY . .
-
