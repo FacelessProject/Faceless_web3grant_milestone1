@@ -1,0 +1,12 @@
+[workspace]
+members = [
+    "node",
+    "pallets/template",
+    "runtime",
+]
+[profile.release]
+panic = "unwind"
+
+[patch]
+[patch.crates-io]
+bn = {package = "zeropool-bn", path = "../bn"}
