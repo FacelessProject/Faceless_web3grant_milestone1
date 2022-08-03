@@ -1,11 +1,8 @@
 use crate::errors::IbeError;
 use rand::Rng;
 use bn::{G1, G2, Gt, Fr as Scalar, Group, pairing};
-use bn::arith::U256;
-use borsh::maybestd::collections::HashMap;
 use crate::traits::IdentityBasedEncryption;
-use crate::traits::ToBytes;
-use crate::utils::{u64_to_scalar, hash_to_g2, baby_step_giant_step};
+use crate::utils::{hash_to_g2, baby_step_giant_step};
 
 pub type CipherText = (G1, Gt);
 pub type PlainData = Scalar;
@@ -19,8 +16,8 @@ pub type IdSecretKey = G2;
 /// # Examples
 /// 
 /// ```
-/// use aibe::traits::{IdentityBasedEncryption};
-/// use aibe::bf_ibe::{BFIbe};
+/// use aibe::traits::IdentityBasedEncryption;
+/// use aibe::bf_ibe::BFIbe;
 /// use rand::Rng;
 /// let mut rng = rand::thread_rng(); 
 /// let mut ibe = BFIbe::new(rng); 
@@ -84,7 +81,10 @@ where R: Rng {
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```
+    /// # use aibe::traits::IdentityBasedEncryption;
+    /// # use aibe::bf_ibe::BFIbe;
+    /// # use rand::Rng;
     /// let mut rng = rand::thread_rng(); 
     /// let mut ibe = BFIbe::new(rng); 
     /// let (msk, mpk) = ibe.generate_key();
@@ -99,11 +99,15 @@ where R: Rng {
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```
+    /// # use aibe::traits::IdentityBasedEncryption;
+    /// # use aibe::bf_ibe::BFIbe;
+    /// # use rand::Rng;
+    /// # use aibe::utils::u64_to_scalar;
     /// let mut rng = rand::thread_rng(); 
     /// let mut ibe = BFIbe::new(rng); 
     /// let (_, mpk) = ibe.generate_key();
-    /// let cipher = ibe.encrypt("alice", u64_to_scalar(35), mpk);
+    /// let cipher = ibe.encrypt(&u64_to_scalar(35), "alice", &mpk);
     /// ```
     fn encrypt(&mut self, msg: &Self::PlainData, id: &str, mpk: &Self::MasterPublicKey) -> Self::CipherText {
         let (c, _, _) = self.encrypt_internal(msg, id, mpk);
@@ -115,12 +119,16 @@ where R: Rng {
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```
+    /// # use aibe::traits::IdentityBasedEncryption;
+    /// # use aibe::bf_ibe::BFIbe;
+    /// # use rand::Rng;
+    /// # use aibe::utils::u64_to_scalar;
     /// let mut rng = rand::thread_rng(); 
     /// let mut ibe = BFIbe::new(rng); 
     /// let (_, mpk1) = ibe.generate_key();
     /// let (_, mpk2) = ibe.generate_key();
-    /// let (cipher1, cipher2) = ibe.encrypt_correlated(u64_to_scalar(35), ("alice", "bob"), (&mpk1, &mpk2));
+    /// let (cipher1, cipher2) = ibe.encrypt_correlated(&u64_to_scalar(35), ("alice", "bob"), (&mpk1, &mpk2));
     /// ```
     fn encrypt_correlated(&mut self, msg: &Self::PlainData, ids: (&str, &str), mpks: (&Self::MasterPublicKey, &Self::MasterPublicKey)) -> (Self::CipherText, Self::CipherText) {
         let (c, _, _) = self.encrypt_correlated_internal(msg, ids, mpks);
@@ -132,11 +140,14 @@ where R: Rng {
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```
+    /// # use aibe::traits::IdentityBasedEncryption;
+    /// # use aibe::bf_ibe::BFIbe;
+    /// # use rand::Rng;
     /// let mut rng = rand::thread_rng(); 
     /// let mut ibe = BFIbe::new(rng); 
     /// let (msk, _) = ibe.generate_key();
-    /// let sk = ibe.extract("alice", msk);
+    /// let sk = ibe.extract("alice", &msk);
     /// ```
     fn extract(&mut self, id: &str, msk: &Self::MasterSecretKey) -> Self::IdSecretKey {
 		let hash_id = hash_to_g2(id.as_bytes());
@@ -147,9 +158,19 @@ where R: Rng {
     ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```
+    /// # use aibe::traits::IdentityBasedEncryption;
+    /// # use aibe::bf_ibe::BFIbe;
+    /// # use rand::Rng;
+    /// # use aibe::utils::u64_to_scalar;
+    /// # let mut rng = rand::thread_rng(); 
+    /// # let mut ibe = BFIbe::new(rng); 
+    /// # let (msk, mpk) = ibe.generate_key();
+    /// # let cipher = ibe.encrypt(&u64_to_scalar(35), "alice", &mpk);
+    /// # let sk = ibe.extract("alice", &msk);
     /// // Following the examples of `encrypt` and `extract`
-    /// let result = ibe.decrypt("alice", &cipher, &sk, 100); 
+    /// let result = ibe.decrypt(&cipher, "alice", &sk, 100); 
+    /// # result.unwrap();
     /// ```
 
     fn decrypt(&mut self, cipher: &Self::CipherText, id: &str, sk: &Self::IdSecretKey, bound: u64) -> Result<Self::PlainData, IbeError> {
