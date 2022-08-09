@@ -1,9 +1,10 @@
 use crate::errors::IbeError;
 use rand::Rng;
-use bn::{G1, G2, Gt, Fr as Scalar, Group};
+use bn::{G1, G2, Gt, Fr as Scalar, Group, pairing};
 use bn::arith::U256;
 use sha2::Digest;
 use borsh::maybestd::collections::HashMap;
+use crate::traits::IdentityBasedEncryption;
 use crate::traits::ToBytes;
 use libm::sqrt;
 

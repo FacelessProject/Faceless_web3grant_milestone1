@@ -1,8 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-/// Edit this file to define custom logic or remove it if it is not needed.
-/// Learn more about FRAME and the core library of Substrate FRAME pallets:
-/// <https://docs.substrate.io/v3/runtime/frame>
+/// This file defines a substrate pallet for the Faceless protocol.
+/// It includes the cryptographic verification logic for the following 
+/// relevant zero-knowledge proofs:
+/// 1. Verification of burn proof
+/// 2. Verification of transfer proof
+
 pub use pallet::*;
 
 #[cfg(test)]
@@ -62,8 +65,8 @@ pub mod pallet {
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// An example dispatchable that takes a singles value as a parameter, writes the value to
-		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
+        /// A dispatchable that takes a burn statement and a burn proof as inputs, verifies the proof, and 
+        /// emits an event that denotes the verification status.
 		#[pallet::weight(1_000)]
 		pub fn verify_burn(origin: OriginFor<T>, statement: Vec<u8>, proof: Vec<u8>) -> DispatchResult {
 			// Check that the extrinsic was signed and get the signer.
@@ -87,7 +90,8 @@ pub mod pallet {
             }
 		}
 
-		/// An example dispatchable that may throw a custom error.
+        /// A dispatchable that takes a transfer statement and a transfer proof as inputs, verifies the proof, and 
+        /// emits an event that denotes the verification status.
 		#[pallet::weight(10_000)]
 		pub fn verify_transfer(origin: OriginFor<T>, statement: Vec<u8>, proof: Vec<u8>) -> DispatchResult {
             // Check that the extrinsic was signed and get the signer.

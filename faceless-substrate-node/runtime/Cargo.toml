@@ -53,7 +53,6 @@ pallet-template = { version = "4.0.0-dev", default-features = false, path = "../
 
 pallet-nicks = {version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.25"}
 
-pallet-proof-of-existence = {version = "4.0.0-dev", default-features = false, path = "../pallets/proof-of-existence"}
 pallet-faceless = {version = "4.0.0-dev", default-features = false, path = "../pallets/faceless"}
 
 [build-dependencies]
@@ -89,7 +88,6 @@ std = [
 	"sp-transaction-pool/std",
 	"sp-version/std",
     "pallet-nicks/std",
-    "pallet-proof-of-existence/std",
     "pallet-faceless/std",
 ]
 runtime-benchmarks = [

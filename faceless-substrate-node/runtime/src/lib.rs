@@ -301,9 +301,6 @@ impl pallet_nicks::Config for Runtime {
 	type Event = Event;
 }
 
-impl pallet_proof_of_existence::Config for Runtime {
-	type Event = Event;
-}
 
 impl pallet_faceless::Config for Runtime {
 	type Event = Event;
@@ -330,7 +327,6 @@ construct_runtime!(
 
         Nicks: pallet_nicks,
 
-        ProofOfExistence: pallet_proof_of_existence,
         Faceless: pallet_faceless,
 	}
 );
