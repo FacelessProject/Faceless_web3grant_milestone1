@@ -1,19 +1,18 @@
-
-use aibe::traits::{IdentityBasedEncryption};
-use aibe::bf_ibe::{BFIbe};
-use aibe::utils::{u64_to_scalar, hash_to_g2, pedersen_commitment};
-use aibe::zk::transfer::{TransferStatement, TransferWitness, TransferProver, TransferVerifier};
-use rand::Rng;
-use bn::{G1, Group};
+use aibe::bf_ibe::BFIbe;
+use aibe::traits::IdentityBasedEncryption;
+use aibe::utils::{pedersen_commitment, u64_to_scalar};
+use aibe::zk::transfer::{TransferProver, TransferStatement, TransferWitness};
+use bn::{Group, G1};
 use borsh::ser::BorshSerialize;
+
 
 extern crate base64;
 
 fn main() {
     use std::time::Instant;
 
-    let mut rng = rand::thread_rng(); 
-    let bound: u64 = 100;
+    let mut rng = rand::thread_rng();
+    let _bound: u64 = 100;
     // Balance
     let b = u64_to_scalar(60);
     // Transfer amount
@@ -25,7 +24,7 @@ fn main() {
 
     let now = Instant::now();
     let (msk1, mpk1) = ibe.generate_key();
-    let (msk2, mpk2) = ibe.generate_key();
+    let (_msk2, mpk2) = ibe.generate_key();
     let elapsed = now.elapsed();
     println!("[IBE key gen]: {:.2?}", elapsed);
 
@@ -38,15 +37,16 @@ fn main() {
     // Encryption of balance for key 1
     let c_balance = ibe.encrypt(&b, "zico1", &mpk1);
     // Encryption of transfer amount for key 1 and key 2
-    let ((c_transfer, c_transfer_bar), (h_id, h_id_bar), r) = ibe.encrypt_correlated_internal(&b_star, ("zico1", "zico2"), (&mpk1, &mpk2));
+    let ((c_transfer, c_transfer_bar), (h_id, h_id_bar), r) =
+        ibe.encrypt_correlated_internal(&b_star, ("zico1", "zico2"), (&mpk1, &mpk2));
     let elapsed = now.elapsed();
     println!("[IBE encrypt]: {:.2?}", elapsed);
 
     let h1 = G1::random(&mut rng);
 
     let now = Instant::now();
-    let (r_star, c_b_star) = pedersen_commitment(b_star, h1, &mut rng); 
-    let (r_prime, c_b_prime) = pedersen_commitment(b_prime, h1, &mut rng); 
+    let (r_star, c_b_star) = pedersen_commitment(b_star, h1, &mut rng);
+    let (r_prime, c_b_prime) = pedersen_commitment(b_prime, h1, &mut rng);
     let elapsed = now.elapsed();
     println!("[Pedersen commitment]: {:.2?}", elapsed);
 
@@ -77,12 +77,15 @@ fn main() {
     let mut prover = TransferProver::new(rng.clone());
     let proof = prover.generate_proof(statement.clone(), witness);
 
-    println!("Transfer proof:\n{}", base64::encode(proof.try_to_vec().unwrap()));
-    println!("Transfer statement:\n{}", base64::encode(statement.try_to_vec().unwrap()));
+    println!(
+        "Transfer proof:\n{}",
+        base64::encode(proof.try_to_vec().unwrap())
+    );
+    println!(
+        "Transfer statement:\n{}",
+        base64::encode(statement.try_to_vec().unwrap())
+    );
 
     //let result = TransferVerifier::verify_proof(statement, proof);
     //assert!(result.is_ok());
 }
-
-
-

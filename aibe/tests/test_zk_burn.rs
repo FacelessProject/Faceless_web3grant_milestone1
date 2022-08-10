@@ -1,16 +1,14 @@
-
-use aibe::traits::{IdentityBasedEncryption};
-use aibe::bf_ibe::{BFIbe};
-use aibe::utils::{u64_to_scalar, hash_to_g2};
-use aibe::zk::burn::{BurnStatement, BurnWitness, BurnProver, BurnVerifier};
+use aibe::bf_ibe::BFIbe;
+use aibe::traits::IdentityBasedEncryption;
+use aibe::utils::{hash_to_g2, u64_to_scalar};
+use aibe::zk::burn::{BurnProver, BurnStatement, BurnVerifier, BurnWitness};
 use rand::Rng;
-
 
 #[test]
 fn test_zk_burn() {
     use std::time::Instant;
 
-    let mut rng = rand::thread_rng(); 
+    let mut rng = rand::thread_rng();
     let bound: u64 = 100;
     let plain = u64_to_scalar(rng.gen_range(0..bound));
 
@@ -34,13 +32,12 @@ fn test_zk_burn() {
     println!("[IBE encrypt]: {:.2?}", elapsed);
 
     let now = Instant::now();
-    let result = ibe.decrypt(&cipher, "zico", &sk, bound); 
+    let result = ibe.decrypt(&cipher, "zico", &sk, bound);
     let elapsed = now.elapsed();
     println!("[IBE Decrypt]: {:.2?}", elapsed);
 
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), plain);
-
 
     let statement = BurnStatement {
         y: mpk,
@@ -60,5 +57,3 @@ fn test_zk_burn() {
     let result = BurnVerifier::verify_proof(statement, proof);
     assert!(result.is_ok());
 }
-
-

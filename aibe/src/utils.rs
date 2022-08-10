@@ -1,13 +1,12 @@
 use crate::errors::IbeError;
-use rand::Rng;
-use bn::{G1, G2, Gt, Fr as Scalar, Group, pairing};
-use bn::arith::U256;
-use sha2::Digest;
-use borsh::maybestd::collections::HashMap;
-use crate::traits::IdentityBasedEncryption;
-use crate::traits::ToBytes;
-use libm::sqrt;
 
+use crate::traits::ToBytes;
+use bn::arith::U256;
+use bn::{Fr as Scalar, Group, Gt, G1, G2};
+use borsh::maybestd::collections::HashMap;
+use libm::sqrt;
+use rand::Rng;
+use sha2::Digest;
 
 pub fn hash_to_scalar(msg: &[u8]) -> Scalar {
     let hash = sha2::Sha256::digest(msg);
@@ -15,7 +14,7 @@ pub fn hash_to_scalar(msg: &[u8]) -> Scalar {
 }
 
 pub fn hash_to_g2(msg: &[u8]) -> G2 {
-    G2::one() * hash_to_scalar(msg) 
+    G2::one() * hash_to_scalar(msg)
 }
 
 pub fn u64_to_scalar(x: u64) -> Scalar {
@@ -33,14 +32,14 @@ pub fn baby_step_giant_step(h: Gt, g: Gt, bound: u64) -> Result<Scalar, IbeError
     while i <= m {
         table.insert(x.to_bytes(), i);
         x = x * g;
-		i = i + 1;
+        i += 1;
     }
 
     // search for solution
-	let z = g.pow(-u64_to_scalar(m));
+    let z = g.pow(-u64_to_scalar(m));
     //z.inverse();
     x = h;
-	i = 0;
+    i = 0;
     while i <= m {
         // positive solution
         match table.get(&x.to_bytes()) {
@@ -54,21 +53,21 @@ pub fn baby_step_giant_step(h: Gt, g: Gt, bound: u64) -> Result<Scalar, IbeError
         }
         // negative solution
         //match table.get(&x_neg.tostring()) {
-            //Some(value) => {
-                //let mut temp = BigNum::modmul(&i, &m, &CURVE_ORDER);
-                //temp = BigNum::modadd(&value, &temp, &CURVE_ORDER);
-                //temp = BigNum::modneg(&temp, &CURVE_ORDER);
-                //let temp = BigInt::from_str_radix(&temp.tostring(), 16).unwrap() - (&*MODULUS);
-                //return Some(temp);
-            //}
-            //None => {
-                //x_neg.mul(&z);
-                //x_neg.reduce();
-            //}
+        //Some(value) => {
+        //let mut temp = BigNum::modmul(&i, &m, &CURVE_ORDER);
+        //temp = BigNum::modadd(&value, &temp, &CURVE_ORDER);
+        //temp = BigNum::modneg(&temp, &CURVE_ORDER);
+        //let temp = BigInt::from_str_radix(&temp.tostring(), 16).unwrap() - (&*MODULUS);
+        //return Some(temp);
         //}
-        i = i + 1
+        //None => {
+        //x_neg.mul(&z);
+        //x_neg.reduce();
+        //}
+        //}
+        i += 1
     }
-	Err(IbeError::OutOfBoundError)
+    Err(IbeError::OutOfBoundError)
 }
 
 pub fn pedersen_commitment<R: Rng>(m: Scalar, h1: G1, rng: &mut R) -> (Scalar, G1) {
